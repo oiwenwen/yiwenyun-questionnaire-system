@@ -1,6 +1,9 @@
 # === 私有配置：含数据库明文口令 ===
 config.php
 
+# === 个人材料（简历、面试准备等），绝不公开 ===
+_private/
+
 # === 本地私有的恢复记录与原始件 ===
 # _restore/RECOVERY.md 是个人事件记录（含云资源 ID、账号、真实数据内容），不公开
 _restore/RECOVERY.md
