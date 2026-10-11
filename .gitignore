@@ -1,0 +1,27 @@
+# === 私有配置：含数据库明文口令 ===
+config.php
+
+# === 本地私有的恢复记录与原始件 ===
+# _restore/RECOVERY.md 是个人事件记录（含云资源 ID、账号、真实数据内容），不公开
+_restore/RECOVERY.md
+_restore/orig/
+
+# === 数据库转储：含账号密码哈希与真实业务数据 ===
+_restore/*.sql
+# 例外：建表脚本要跟着项目走
+!_restore/schema.sql
+
+# === 本地运行环境（约 1.9 GB）===
+_tools/
+
+# === 通用 ===
+*.bak
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# === 编辑器 ===
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>問卷填寫</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .survey-container { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .required { color: red; margin-left: 2px; }
+        .question { margin-bottom: 20px; }
+        .question-title { font-weight: bold; margin-bottom: 8px; }
+        .options { margin-left: 10px; }
+        .option { margin-bottom: 5px; }
+        textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        .submit-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        .submit-btn:hover { background: #0056b3; }
+        .description { color: #666; margin-bottom: 20px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="survey-container">
+        <h1 id="survey-title">載入中...</h1>
+        <p id="survey-description" class="description">載入中...</p>
+        <form id="survey-form">
+            <div id="questions-container"></div>
+            <button type="submit" class="submit-btn">提交問卷</button>
+        </form>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const survey_id = urlParams.get('id') || 0;
+
+        if (!survey_id) {
+            document.getElementById('survey-title').innerText = '無效的問卷ID';
+        } else {
+            // 用相对路径，站点部署在子目录时也能正常工作
+            fetch(`api/get_survey.php?id=${survey_id}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (!result.success) {
+                        document.getElementById('survey-title').innerText = result.msg || '載入失敗';
+                        return;
+                    }
+
+                    const survey = result.survey;
+                    document.getElementById('survey-title').innerText = survey.title || '未命名問卷';
+                    document.getElementById('survey-description').innerText = survey.description || '暫無描述';
+
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'survey_id';
+                    hiddenInput.value = survey_id;
+                    document.getElementById('survey-form').appendChild(hiddenInput);
+
+                    const questionsContainer = document.getElementById('questions-container');
+                    (result.questions || []).forEach(q => {  // 加 (result.questions || []) 防 undefined
+                        const questionDiv = document.createElement('div');
+                        questionDiv.className = 'question';
+
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'question-title';
+                        titleDiv.innerText = q.title || '未命名問題';
+                        if (q.required) {
+                            const requiredSpan = document.createElement('span');
+                            requiredSpan.className = 'required';
+                            requiredSpan.innerText = '*';
+                            titleDiv.appendChild(requiredSpan);
+                        }
+                        questionDiv.appendChild(titleDiv);
+
+                        if (q.type === 'radio' || q.type === 'checkbox') {
+                            const optionsDiv = document.createElement('div');
+                            optionsDiv.className = 'options';
+                            (q.options || []).forEach(opt => {  // 加 (q.options || []) 防 undefined
+                                const optionDiv = document.createElement('div');
+                                optionDiv.className = 'option';
+
+                                const label = document.createElement('label');
+                                const input = document.createElement('input');
+                                input.type = q.type;
+                                input.name = `q${q.id}` + (q.type === 'checkbox' ? '[]' : '');
+                                input.value = opt.text || '未定義選項';  // 防 undefined
+                                if (q.required) input.required = true;
+                                label.appendChild(input);
+                                label.appendChild(document.createTextNode(opt.text || '未定義選項'));
+                                optionDiv.appendChild(label);
+                                optionsDiv.appendChild(optionDiv);
+                            });
+                            questionDiv.appendChild(optionsDiv);
+                        } else if (q.type === 'text') {
+                            const textarea = document.createElement('textarea');
+                            textarea.name = `q${q.id}`;
+                            textarea.rows = 4;
+                            if (q.required) textarea.required = true;
+                            textarea.placeholder = '請輸入您的答案...';
+                            questionDiv.appendChild(textarea);
+                        }
+
+                        questionsContainer.appendChild(questionDiv);
+                    });
+                })
+                .catch(err => {
+                    document.getElementById('survey-title').innerText = '載入錯誤';
+                    console.error(err);
+                    alert('載入問卷失敗，請檢查網路或後端 API');
+                });
+        }
+
+        // 提交邏輯
+        // 替换原来的提交事件处理
+document.getElementById('survey-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // 显示加载状态
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '提交中...';
+    submitBtn.disabled = true;
+    
+    const formData = new FormData(this);
+    
+    fetch('api/submit_response.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // 显示成功页面
+            document.querySelector('.survey-container').innerHTML = `
+                <div style="text-align: center; padding: 40px 20px;">
+                    <div style="font-size: 60px; color: #28a745; margin-bottom: 20px;">✅</div>
+                    <h2 style="color: #28a745; margin-bottom: 15px;">提交成功！</h2>
+                    <p style="font-size: 18px; margin-bottom: 10px;">感谢您填写问卷</p>
+                    <p style="color: #666; margin-bottom: 10px;">问卷标题：<strong>${result.survey_title || '问卷'}</strong></p>
+                    <p style="color: #777; margin-bottom: 30px;">您的反馈对我们非常重要</p>
+                    
+                    <div style="margin-top: 30px;">
+                        <button onclick="window.location.href='index.html'" 
+                                style="padding: 12px 30px; background: #007bff; color: white; 
+                                       border: none; border-radius: 6px; cursor: pointer; 
+                                       font-size: 16px; margin-right: 10px;">
+                            返回首页
+                        </button>
+                        <button onclick="window.location.reload()" 
+                                style="padding: 12px 30px; background: #6c757d; color: white; 
+                                       border: none; border-radius: 6px; cursor: pointer; 
+                                       font-size: 16px;">
+                            再填一份
+                        </button>
+                    </div>
+                    
+                    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+                        <p style="margin: 0; color: #666; font-size: 14px;">
+                            💡 提示：问卷已保存，您可以关闭此页面
+                        </p>
+                    </div>
+                </div>
+            `;
+        } else {
+            alert('提交失败：' + (result.msg || '未知错误'));
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(err => {
+        alert('网络错误，请检查网络连接后重试');
+        console.error(err);
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+});
+    </script>
+</body>
+</html>

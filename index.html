@@ -1,0 +1,1863 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+
+  <!-- 引入 SweetAlert2 -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>易问云问卷系统 - 完整版</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f5f7fa;
+      color: #333;
+    }
+
+    /* 登录注册界面 */
+    .auth-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .auth-box {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-title {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2c3e50;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #7f8c8d;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-bottom: 10px;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-success {
+      background: #2ecc71;
+      color: white;
+    }
+
+    .btn-link {
+      background: transparent;
+      color: #3498db;
+      text-decoration: underline;
+      padding: 0;
+      margin: 0;
+      text-align: center;
+    }
+
+    .switch-form {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    /* 主仪表盘 */
+    .dashboard {
+      display: flex;
+      min-height: 100vh;
+      display: none;
+    }
+
+    .sidebar {
+      width: 240px;
+      background: #2c3e50;
+      color: white;
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .logo {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid #34495e;
+      margin-bottom: 20px;
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      color: #3498db;
+    }
+
+    .nav-menu {
+      list-style: none;
+    }
+
+    .nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      transition: background 0.3s;
+      display: flex;
+      align-items: center;
+      border-left: 4px solid transparent;
+    }
+
+    .nav-item:hover {
+      background: #34495e;
+    }
+
+    .nav-item.active {
+      background: #3498db;
+      border-left: 4px solid #2980b9;
+    }
+
+    .nav-item i {
+      margin-right: 10px;
+      font-size: 1.1rem;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 20px;
+      margin-left: 240px;
+      overflow-y: auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h2 {
+      color: #2c3e50;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .user-info span {
+      margin-right: 15px;
+      color: #7f8c8d;
+      cursor: pointer;
+    }
+
+    /* 通用样式 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .stat-title {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin: 10px 0;
+    }
+
+    .stat-change {
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .change-up {
+      color: #2ecc71;
+    }
+
+    .change-down {
+      color: #e74c3c;
+    }
+
+    .module-container {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .module-title {
+      font-size: 1.2rem;
+      color: #2c3e50;
+    }
+
+    .btn-module {
+      padding: 8px 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-module.create {
+      background: #2ecc71;
+    }
+
+    .btn-module.export {
+      background: #9b59b6;
+    }
+
+    /* 问卷管理表格 */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      color: #7f8c8d;
+      font-weight: normal;
+      font-size: 0.9rem;
+      background: #f8f9fa;
+    }
+
+    .status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+    }
+
+    .status.draft {
+      background: #fef9e7;
+      color: #f39c12;
+    }
+
+    .status.published {
+      background: #e8f6ef;
+      color: #2ecc71;
+    }
+
+    .status.closed {
+      background: #fadbd8;
+      color: #e74c3c;
+    }
+
+    .actions button {
+      margin-right: 5px;
+      padding: 4px 8px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    .action-edit {
+      background: #3498db;
+      color: white;
+    }
+
+    .action-delete {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .action-preview {
+      background: #f39c12;
+      color: white;
+    }
+
+    /* 问卷设计表单 */
+    .question-form {
+      margin-bottom: 20px;
+      padding: 15px;
+      border: 1px solid #eee;
+      border-radius: 5px;
+    }
+
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .question-content {
+      margin-bottom: 10px;
+    }
+
+    .option-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    .option-item input {
+      margin-right: 10px;
+    }
+
+    .add-option {
+      margin-top: 10px;
+      color: #3498db;
+      cursor: pointer;
+    }
+
+    /* 数据分析图表 */
+    .chart-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+
+    .chart-title {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      color: #2c3e50;
+    }
+
+    .chart-placeholder {
+      height: 300px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #95a5a6;
+      position: relative;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .control-btn {
+      padding: 8px 15px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .control-btn.export {
+      background: #2ecc71;
+    }
+
+    .control-btn.refresh {
+      background: #95a5a6;
+    }
+
+    .control-btn.delete {
+      background: #e74c3c;
+    }
+
+    /* 用户管理表格 */
+    .role-admin { color: #e74c3c; font-weight: bold; }
+    .role-editor { color: #3498db; }
+    .role-viewer { color: #7f8c8d; }
+
+    /* 模板库 */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .template-card {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .template-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .template-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .template-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .template-desc {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+    }
+
+    /* 隐藏所有模块，除了仪表盘 */
+    .my-surveys, .survey-design, .data-analysis, .template-library, .user-management, .system-management, .system-logs {
+      display: none;
+    }
+
+    /* 问卷结果弹窗样式 */
+.survey-results-popup {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.survey-results-container {
+    font-size: 14px;
+}
+
+.results-header {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.stats-box {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-item {
+    padding: 8px 15px;
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.stat-label {
+    color: #666;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 18px;
+}
+
+.results-table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.results-table th {
+    background: #f2f2f2;
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 2px solid #ddd;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.results-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+    max-width: 200px;
+    word-wrap: break-word;
+}
+
+.results-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.no-data {
+    text-align: center;
+    padding: 50px 20px;
+    color: #999;
+}
+
+.no-data p:first-child {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+  </style>
+</head>
+<body>
+  <!-- 登录注册界面 -->
+  <div id="auth-section" class="auth-container">
+    <div class="auth-box">
+      <h2 class="auth-title">易问云问卷系统</h2>
+      <div id="login-form">
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input type="text" id="username" class="form-control" placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input type="password" id="password" class="form-control" placeholder="请输入密码">
+        </div>
+        <button id="login-btn" class="btn btn-primary">登录</button>
+        <div class="switch-form">
+          <button id="show-register" class="btn btn-link">还没有账户？立即注册</button>
+        </div>
+      </div>
+      
+      <div id="register-form" style="display:none;">
+        <div class="form-group">
+          <label for="new-username">用户名</label>
+          <input type="text" id="new-username" class="form-control" placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+          <label for="new-password">密码</label>
+          <input type="password" id="new-password" class="form-control" placeholder="请输入密码">
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">确认密码</label>
+          <input type="password" id="confirm-password" class="form-control" placeholder="请再次输入密码">
+        </div>
+        <button id="register-btn" class="btn btn-success">注册</button>
+        <div class="switch-form">
+          <button id="show-login" class="btn btn-link">已有账户？立即登录</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主仪表盘 -->
+  <div id="main-dashboard" class="dashboard">
+    <div class="sidebar">
+      <div class="logo">
+        <h1>易问云</h1>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item active" data-module="dashboard">
+          <i>📊</i> 仪表盘
+        </li>
+        <li class="nav-item" data-module="my-surveys">
+          <i>📋</i> 我的问卷
+        </li>
+        <li class="nav-item" data-module="survey-design">
+          <i>📝</i> 问卷设计
+        </li>
+        <li class="nav-item" data-module="data-analysis">
+          <i>📈</i> 数据分析
+        </li>
+        <li class="nav-item" data-module="template-library">
+          <i>🎨</i> 模板库
+        </li>
+        <li class="nav-item" data-module="user-management">
+          <i>👥</i> 用户管理
+        </li>
+        <li class="nav-item" data-module="system-management">
+          <i>⚙️</i> 系统管理
+        </li>
+        <li class="nav-item" data-module="system-logs">
+          <i>📋</i> 系统日志
+        </li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <div class="header">
+        <h2 id="page-title">仪表盘</h2>
+        <div class="user-info">
+          <span id="current-user">张三</span>
+          <span id="logout-btn">退出</span>
+        </div>
+      </div>
+
+      <!-- 仪表盘内容 -->
+      <div id="dashboard" class="module-container" style="display:block;">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">总创建问卷</span>
+              <i>📋</i>
+            </div>
+            <div class="stat-value">28</div>
+            <div class="stat-change change-up">
+              <i>↑</i> 较上月增长12%
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">已收集问卷</span>
+              <i>📥</i>
+            </div>
+            <div class="stat-value">1,587</div>
+            <div class="stat-change change-up">
+              <i>↑</i> 较上月增长8%
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">活跃问卷</span>
+              <i>🔄</i>
+            </div>
+            <div class="stat-value">16</div>
+            <div class="stat-change change-down">
+              <i>↓</i> 较上月下降3%
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">系统用户</span>
+              <i>👥</i>
+            </div>
+            <div class="stat-value">128</div>
+            <div class="stat-change change-up">
+              <i>↑</i> 较上月增长18%
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">问卷提交趋势</div>
+            <div class="chart-placeholder">
+              <div class="line-chart">
+                <div class="line"></div>
+                <div class="line-graph">
+                  <div class="point" style="left: 10%; bottom: 30%;"></div>
+                  <div class="point" style="left: 20%; bottom: 50%;"></div>
+                  <div class="point" style="left: 30%; bottom: 40%;"></div>
+                  <div class="point" style="left: 40%; bottom: 70%;"></div>
+                  <div class="point" style="left: 50%; bottom: 20%;"></div>
+                  <div class="point" style="left: 60%; bottom: 60%;"></div>
+                  <div class="point" style="left: 70%; bottom: 80%;"></div>
+                  <div class="point-label" style="left: 10%;">周一</div>
+                  <div class="point-label" style="left: 20%;">周二</div>
+                  <div class="point-label" style="left: 30%;">周三</div>
+                  <div class="point-label" style="left: 40%;">周四</div>
+                  <div class="point-label" style="left: 50%;">周五</div>
+                  <div class="point-label" style="left: 60%;">周六</div>
+                  <div class="point-label" style="left: 70%;">周日</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">问卷类型分布</div>
+            <div class="chart-placeholder">
+              <div class="pie-chart">
+                <svg viewBox="0 0 100 100" style="width: 200px; height: 200px;">
+                  <circle cx="50" cy="50" r="45" fill="#3498db" stroke="#fff" stroke-width="8" stroke-dasharray="220 283" />
+                  <circle cx="50" cy="50" r="45" fill="#e74c3c" stroke="#fff" stroke-width="8" stroke-dasharray="80 283" stroke-dashoffset="-220" />
+                  <circle cx="50" cy="50" r="45" fill="#2ecc71" stroke="#fff" stroke-width="8" stroke-dasharray="50 283" stroke-dashoffset="-300" />
+                  <circle cx="50" cy="50" r="45" fill="#f39c12" stroke="#fff" stroke-width="8" stroke-dasharray="30 283" stroke-dashoffset="-350" />
+                  <circle cx="50" cy="50" r="45" fill="#9b59b6" stroke="#fff" stroke-width="8" stroke-dasharray="3 283" stroke-dashoffset="-380" />
+                </svg>
+              </div>
+              <div style="margin-top: 20px;">
+                <div style="display: flex; align-items: center; margin: 5px 0;"><div style="width: 15px; height: 15px; background: #3498db; margin-right: 10px;"></div>市场调研 (45%)</div>
+                <div style="display: flex; align-items: center; margin: 5px 0;"><div style="width: 15px; height: 15px; background: #e74c3c; margin-right: 10px;"></div>用户反馈 (28%)</div>
+                <div style="display: flex; align-items: center; margin: 5px 0;"><div style="width: 15px; height: 15px; background: #2ecc71; margin-right: 10px;"></div>学术研究 (15%)</div>
+                <div style="display: flex; align-items: center; margin: 5px 0;"><div style="width: 15px; height: 15px; background: #f39c12; margin-right: 10px;"></div>产品体验 (10%)</div>
+                <div style="display: flex; align-items: center; margin: 5px 0;"><div style="width: 15px; height: 15px; background: #9b59b6; margin-right: 10px;"></div>其他 (2%)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-surveys">
+          <div class="module-header">
+            <h3 class="module-title">最近创建的问卷</h3>
+            <a href="#" class="view-all">查看全部 ></a>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>问卷名称</th>
+                  <th>创建时间</th>
+                  <th>提交数量</th>
+                  <th>状态</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>产品满意度调研</td>
+                  <td>2023-11-15</td>
+                  <td>128</td>
+                  <td><span class="status published">已发布</span></td>
+                  <td class="actions">
+                    <button class="action-preview">预览</button>
+                    <button class="action-edit">编辑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>用户需求分析问卷</td>
+                  <td>2023-11-12</td>
+                  <td>89</td>
+                  <td><span class="status published">已发布</span></td>
+                  <td class="actions">
+                    <button class="action-preview">预览</button>
+                    <button class="action-edit">编辑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>校园餐饮满意度调查</td>
+                  <td>2023-11-10</td>
+                  <td>205</td>
+                  <td><span class="status published">已发布</span></td>
+                  <td class="actions">
+                    <button class="action-preview">预览</button>
+                    <button class="action-edit">编辑</button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>新功能用户体验反馈</td>
+                  <td>2023-11-08</td>
+                  <td>76</td>
+                  <td><span class="status draft">草稿</span></td>
+                  <td class="actions">
+                    <button class="action-preview">预览</button>
+                    <button class="action-edit">编辑</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="control-btn refresh">刷新数据</button>
+          <button class="control-btn export">导出报告</button>
+        </div>
+      </div>
+
+          <!-- 我的问卷模块（动态加载） -->
+      <div id="my-surveys" class="module-container">
+        <div class="module-header">
+          <h3 class="module-title">我的问卷</h3>
+          <div>
+            <button class="btn-module create" onclick="switchModule('survey-design')">创建问卷</button>
+            <button class="btn-module export">导出数据</button>
+          </div>
+        </div>
+        <div class="filter-controls">
+          <select id="status-filter" style="padding: 8px; margin-right: 10px; border-radius: 4px; border: 1px solid #ddd;">
+            <option value="">所有状态</option>
+            <option value="draft">草稿</option>
+            <option value="published">已发布</option>
+            <option value="closed">已结束</option>
+          </select>
+          <select id="category-filter" style="padding: 8px; margin-right: 10px; border-radius: 4px; border: 1px solid #ddd;">
+            <option value="">所有分类</option>
+            <option value="market">市场调研</option>
+            <option value="feedback">用户反馈</option>
+            <option value="academic">学术研究</option>
+          </select>
+        </div>
+        <div id="my-surveys-container" style="padding: 20px;">
+          <!-- 问卷列表将由 JavaScript 动态插入这里 -->
+        </div>
+      </div>
+
+      <!-- 问卷设计模块 -->
+      <div id="survey-design" class="module-container">
+        <div class="module-header">
+          <h3 class="module-title">问卷设计</h3>
+          <div>
+            <button class="btn-module" id="save-survey">保存问卷</button>
+            <button class="btn-module" id="publish-survey">发布问卷</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="survey-title">问卷标题</label>
+          <input type="text" id="survey-title" class="form-control" placeholder="请输入问卷标题">
+        </div>
+        <div class="form-group">
+          <label for="survey-description">问卷描述</label>
+          <textarea id="survey-description" class="form-control" rows="3" placeholder="请输入问卷描述"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="survey-time">问卷时间设置</label>
+          <input type="datetime-local" id="survey-start" placeholder="开始时间">
+          <input type="datetime-local" id="survey-end" placeholder="结束时间" style="margin-left: 10px;">
+        </div>
+        <div id="questions-container">
+          <!-- 问题将动态添加到这里 -->
+        </div>
+        <button id="add-question-btn" class="btn-module" style="margin-top: 20px;">添加问题</button>
+      </div>
+
+      <!-- 数据分析模块 -->
+      <div id="data-analysis" class="module-container">
+        <div class="module-header">
+          <h3 class="module-title">数据分析</h3>
+          <div>
+            <button class="btn-module export">导出数据</button>
+            <button class="btn-module">生成报告</button>
+          </div>
+        </div>
+        <div class="chart-row">
+          <div class="chart-container">
+            <div class="chart-title">填写进度统计</div>
+            <div class="chart-placeholder">
+              <div style="width: 100%; height: 100%; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px;">
+                <div style="width: 40px; background: #3498db; height: 80%; margin: 0 5px;"></div>
+                <div style="width: 40px; background: #3498db; height: 60%; margin: 0 5px;"></div>
+                <div style="width: 40px; background: #3498db; height: 90%; margin: 0 5px;"></div>
+                <div style="width: 40px; background: #3498db; height: 40%; margin: 0 5px;"></div>
+                <div style="width: 40px; background: #3498db; height: 70%; margin: 0 5px;"></div>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <div class="chart-title">完成率统计</div>
+            <div class="chart-placeholder">
+              <div style="width: 200px; height: 200px; margin: 0 auto; position: relative;">
+                <svg viewBox="0 0 100 100" style="width: 200px; height: 200px;">
+                  <circle cx="50" cy="50" r="45" fill="#ecf0f1" />
+                  <circle cx="50" cy="50" r="45" fill="transparent" stroke="#2ecc71" stroke-width="10" stroke-dasharray="251.2" stroke-dashoffset="50" transform="rotate(-90 50 50)" />
+                </svg>
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                  <div style="font-size: 1.5rem; font-weight: bold;">75%</div>
+                  <div style="font-size: 0.8rem; color: #7f8c8d;">完成率</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-title">多维度交叉分析</div>
+          <div style="padding: 20px;">
+            <div style="display: flex; margin-bottom: 20px;">
+              <select style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-right: 10px;">
+                <option>按性别分析</option>
+                <option>按年龄分析</option>
+                <option>按地区分析</option>
+              </select>
+              <select style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                <option>按满意度分析</option>
+                <option>按评分分析</option>
+              </select>
+            </div>
+            <div style="height: 300px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: flex-end; justify-content: space-around; padding: 20px;">
+              <div style="width: 40px; background: #3498db; height: 70%; margin: 0 5px;"></div>
+              <div style="width: 40px; background: #e74c3c; height: 50%; margin: 0 5px;"></div>
+              <div style="width: 40px; background: #2ecc71; height: 80%; margin: 0 5px;"></div>
+              <div style="width: 40px; background: #f39c12; height: 60%; margin: 0 5px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 模板库模块 -->
+      <div id="template-library" class="module-container">
+        <div class="module-header">
+          <h3 class="module-title">模板库</h3>
+          <div>
+            <input type="text" placeholder="搜索模板..." style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; margin-right: 10px;">
+            <button class="btn-module">上传模板</button>
+          </div>
+        </div>
+        <div class="template-grid">
+          <div class="template-card">
+            <div class="template-icon">📊</div>
+            <div class="template-name">市场调研问卷</div>
+            <div class="template-desc">适用于产品市场分析</div>
+          </div>
+          <div class="template-card">
+            <div class="template-icon">👥</div>
+            <div class="template-name">用户满意度调查</div>
+            <div class="template-desc">了解用户真实感受</div>
+          </div>
+          <div class="template-card">
+            <div class="template-icon">🎓</div>
+            <div class="template-name">学术研究问卷</div>
+            <div class="template-desc">专业研究数据收集</div>
+          </div>
+          <div class="template-card">
+            <div class="template-icon">🏢</div>
+            <div class="template-name">员工满意度调研</div>
+            <div class="template-desc">企业内部员工评估</div>
+          </div>
+          <div class="template-card">
+            <div class="template-icon">🛒</div>
+            <div class="template-name">消费者购买意向</div>
+            <div class="template-desc">购物行为分析</div>
+          </div>
+          <div class="template-card">
+            <div class="template-icon">🏥</div>
+            <div class="template-name">医疗服务评价</div>
+            <div class="template-desc">医疗服务质量调查</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 用户管理模块 -->
+      <div id="user-management" class="module-container">
+        <div class="module-header">
+          <h3 class="module-title">用户管理</h3>
+          <div>
+            <button class="btn-module create">添加用户</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>用户名</th>
+                <th>邮箱</th>
+                <th>角色</th>
+                <th>注册时间</th>
+                <th>状态</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>张三</td>
+                <td>zhangsan@example.com</td>
+                <td><span class="role-admin">管理员</span></td>
+                <td>2023-01-15</td>
+                <td>激活</td>
+                <td class="actions">
+                  <button class="action-edit">编辑</button>
+                  <button class="action-delete">删除</button>
+                </td>
+              </tr>
+              <tr>
+                <td>李四</td>
+                <td>lisi@example.com</td>
+                <td><span class="role-editor">编辑者</span></td>
+                <td>2023-02-20</td>
+                <td>激活</td>
+                <td class="actions">
+                  <button class="action-edit">编辑</button>
+                  <button class="action-delete">删除</button>
+                </td>
+              </tr>
+              <tr>
+                <td>王五</td>
+                <td>wangwu@example.com</td>
+                <td><span class="role-viewer">查看者</span></td>
+                <td>2023-03-10</td>
+                <td>激活</td>
+                <td class="actions">
+                  <button class="action-edit">编辑</button>
+                  <button class="action-delete">删除</button>
+                </td>
+              </tr>
+              <tr>
+                <td>赵六</td>
+                <td>zhaoliu@example.com</td>
+                <td><span class="role-editor">编辑者</span></td>
+                <td>2023-04-05</td>
+                <td>禁用</td>
+                <td class="actions">
+                  <button class="action-edit">编辑</button>
+                  <button class="action-delete">删除</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 系统管理模块 -->
+      <div id="system-management" class="module-container">
+        <div class="module-header">
+          <h3 class="module-title">系统管理</h3>
+        </div>
+        <div style="padding: 20px;">
+          <h4 style="margin-bottom: 15px;">账号安全设置</h4>
+          <div class="form-group">
+            <label>密码强度要求</label>
+            <select style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; width: 200px;">
+              <option>中等（6位以上）</option>
+              <option>强（8位以上含特殊字符）</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>登录失败锁定次数</label>
+            <input type="number" value="5" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; width: 200px;">
+          </div>
+          
+          <h4 style="margin: 25px 0 15px;">数据备份与恢复</h4>
+          <button class="btn-module">立即备份</button>
+          <button class="btn-module" style="background: #95a5a6;">恢复数据</button>
+          
+          <h4 style="margin: 25px 0 15px;">通知模板配置</h4>
+          <div class="form-group">
+            <label>问卷提交通知模板</label>
+            <textarea class="form-control" rows="4" placeholder="请输入通知模板...">您好，您有一份新的问卷提交：{questionnaire_name}，提交人：{submitter}，提交时间：{submit_time}</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 系统日志模块 -->
+      <div id="system-logs" class="module-container">
+        <div class="module-header">
+          <h3 class="module-title">系统日志</h3>
+          <div>
+            <button class="btn-module">导出日志</button>
+          </div>
+        </div>
+        <div style="padding: 20px; max-height: 500px; overflow-y: auto;">
+          <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace;">
+            <span style="color: #2ecc71;">[INFO]</span> 2023-11-20 10:30:15 - 用户张三登录系统
+          </div>
+          <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace;">
+            <span style="color: #3498db;">[ACTION]</span> 2023-11-20 10:32:22 - 用户张三创建问卷 "产品满意度调研"
+          </div>
+          <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace;">
+            <span style="color: #f39c12;">[WARNING]</span> 2023-11-20 10:45:30 - 检测到异常登录尝试
+          </div>
+          <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace;">
+            <span style="color: #2ecc71;">[INFO]</span> 2023-11-20 11:00:10 - 问卷 "产品满意度调研" 发布成功
+          </div>
+          <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; font-family: monospace;">
+            <span style="color: #e74c3c;">[ERROR]</span> 2023-11-20 11:15:45 - 数据库连接超时
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 全局变量
+    let currentUser = null;
+    let currentModule = 'dashboard';
+    let questions = [];
+
+    // DOM元素
+    const authSection = document.getElementById('auth-section');
+    const mainDashboard = document.getElementById('main-dashboard');
+    const currentUserSpan = document.getElementById('current-user');
+    const logoutBtn = document.getElementById('logout-btn');
+    const pageTitle = document.getElementById('page-title');
+    const navItems = document.querySelectorAll('.nav-item');
+    const modules = document.querySelectorAll('.module-container');
+    
+    // 登录相关元素
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const showRegisterBtn = document.getElementById('show-register');
+    const showLoginBtn = document.getElementById('show-login');
+    const loginBtn = document.getElementById('login-btn');
+    const registerBtn = document.getElementById('register-btn');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const newUsernameInput = document.getElementById('new-username');
+    const newPasswordInput = document.getElementById('new-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+
+    // 初始化
+    function init() {
+      // 检查是否有已登录用户
+      const savedUser = localStorage.getItem('currentUser');
+      if (savedUser) {
+        try {
+          const user = JSON.parse(savedUser);
+          if (user && user.username) {
+            currentUser = user;
+            showDashboard();
+          }
+        } catch (e) {
+          console.log('无效的用户数据');
+        }
+      }
+      
+      bindEvents();
+    }
+
+    // 绑定事件
+    function bindEvents() {
+      // 登录注册切换
+      showRegisterBtn.addEventListener('click', () => {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'block';
+      });
+
+      showLoginBtn.addEventListener('click', () => {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'block';
+      });
+
+      // 登录
+      loginBtn.addEventListener('click', login);
+      
+      // 注册
+      registerBtn.addEventListener('click', register);
+      
+      // 退出登录
+      logoutBtn.addEventListener('click', logout);
+
+      // 导航栏切换
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const module = item.getAttribute('data-module');
+          switchModule(module);
+        });
+      });
+
+      // 问卷设计相关
+      document.getElementById('add-question-btn').addEventListener('click', addQuestion);
+      document.getElementById('save-survey').addEventListener('click', saveSurvey);
+      document.getElementById('publish-survey').addEventListener('click', publishSurvey);
+    }
+
+    // 登录功能
+    async function login() {
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value;
+
+  if (!username || !password) {
+    alert('请输入用户名和密码');
+    return;
+  }
+
+  try {
+    const response = await fetch('api/login.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      currentUser = result.user;
+      currentUserSpan.textContent = currentUser.username;
+      authSection.style.display = 'none';
+      mainDashboard.style.display = 'flex';
+      switchModule('dashboard');
+    } else {
+      alert(result.msg || '登录失败');
+    }
+  } catch (err) {
+    alert('网络错误：无法连接到后端，请检查服务器是否运行');
+    console.error(err);
+  }
+}
+
+    // 注册功能
+    function register() {
+  const username = newUsernameInput.value.trim();
+  const password = newPasswordInput.value;
+  const confirmPassword = confirmPasswordInput.value;
+
+  if (!username || !password || !confirmPassword) {
+    alert('请填写所有字段');
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    alert('两次输入的密码不一致');
+    return;
+  }
+
+  if (password.length < 6) {
+    alert('密码长度至少6位');
+    return;
+  }
+
+  // === 真实后端注册 ===
+  fetch('api/register.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      currentUser = result.user;
+      currentUserSpan.textContent = currentUser.username;
+      authSection.style.display = 'none';
+      mainDashboard.style.display = 'flex';
+      switchModule('dashboard');
+      alert('注册成功，已自动登录！');
+    } else {
+      alert(result.msg || '注册失败');
+    }
+  })
+  .catch(err => {
+    alert('网络错误，无法连接服务器');
+    console.error(err);
+  });
+}
+
+    // 退出登录
+    function logout() {
+  fetch('api/logout.php')
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        currentUser = null;
+        authSection.style.display = 'flex';
+        mainDashboard.style.display = 'none';
+        // 清空输入框（可选）
+        usernameInput.value = '';
+        passwordInput.value = '';
+        alert('已退出登录');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('退出失败，请刷新页面');
+    });
+}
+
+    // 显示仪表盘
+    function showDashboard() {
+      currentUserSpan.textContent = currentUser.username;
+      authSection.style.display = 'none';
+      mainDashboard.style.display = 'flex';
+      switchModule('dashboard');
+    }
+
+    // 切换模块
+    function switchModule(module) {
+      // 更新导航栏
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('data-module') === module) {
+          item.classList.add('active');
+        }
+      });
+      
+      // 隐藏所有模块
+      modules.forEach(mod => {
+        mod.style.display = 'none';
+      });
+      
+      // 显示目标模块
+      document.getElementById(module).style.display = 'block';
+      
+      // 更新页面标题
+      const titles = {
+        'dashboard': '仪表盘',
+        'my-surveys': '我的问卷',
+        'survey-design': '问卷设计',
+        'data-analysis': '数据分析',
+        'template-library': '模板库',
+        'user-management': '用户管理',
+        'system-management': '系统管理',
+        'system-logs': '系统日志'
+      };
+      pageTitle.textContent = titles[module];
+      
+      currentModule = module;
+    }
+
+    // 问卷设计功能
+    function addQuestion() {
+  const questionTypes = ['单选题', '多选题', '填空题'];  // 只保留这三个
+  const type = prompt('请选择问题类型:\n' + questionTypes.map((t, i) => `${i+1}. ${t}`).join('\n'));
+  if (!type) return;
+  
+  const typeIndex = parseInt(type) - 1;
+  if (typeIndex < 0 || typeIndex >= questionTypes.length) {
+    alert('无效的选择');
+    return;
+  }
+  
+  const questionText = prompt('请输入问题内容：');
+  if (!questionText) return;
+  
+  const newQuestion = {
+    id: Date.now(),
+    type: ['radio', 'checkbox', 'text'][typeIndex],  // 只对应前三个
+    title: questionText,
+    required: false,
+    options: []
+  };
+  
+  // 只为单选和多选添加选项
+  if (['radio', 'checkbox'].includes(newQuestion.type)) {
+    const optionCount = parseInt(prompt('请输入选项数量（最多10个）：', 4)) || 4;
+    for (let i = 0; i < Math.min(optionCount, 10); i++) {
+      const optionText = prompt(`请输入第 ${i+1} 个选项内容：`);
+      if (optionText) {
+        newQuestion.options.push(optionText);
+      }
+    }
+  }
+  
+  questions.push(newQuestion);
+  renderQuestions();
+}
+    
+    function renderQuestions() {
+      const container = document.getElementById('questions-container');
+      container.innerHTML = '';
+      
+      questions.forEach((q, index) => {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question-form';
+        questionDiv.innerHTML = `
+          <div class="question-header">
+            <h4>${q.title}</h4>
+            <button class="action-delete" onclick="removeQuestion(${index})">删除</button>
+          </div>
+          <div class="question-content">
+            <label>
+              <input type="checkbox" ${q.required ? 'checked' : ''} onchange="toggleRequired(${index})">
+              设为必答题
+            </label>
+          </div>
+          ${q.options.length > 0 ? `
+            <div class="question-options">
+              ${q.options.map(opt => `<div class="option-item"><input type="text" value="${opt}" readonly></div>`).join('')}
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(questionDiv);
+      });
+    }
+    
+    window.removeQuestion = function(index) {
+      questions.splice(index, 1);
+      renderQuestions();
+    };
+    
+    window.toggleRequired = function(index) {
+      questions[index].required = !questions[index].required;
+    };
+    
+
+function publishSurvey() {
+  const title = document.getElementById('survey-title').value.trim();
+  if (!title) {
+    alert('请先输入问卷标题');
+    return;
+  }
+  if (questions.length === 0) {
+    alert('请至少添加一个问题');
+    return;
+  }
+
+  if (!confirm('发布后问卷将无法修改，确定要发布吗？')) {
+    return;
+  }
+
+  const data = {
+    title: title,
+    description: document.getElementById('survey-description')?.value.trim() || '',
+    status: 'published',
+    questions: questions
+  };
+
+  fetch('api/create_survey.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      alert('问卷发布成功！');
+      questions = [];
+      document.getElementById('survey-title').value = '';
+      document.getElementById('survey-description').value = '';
+      renderQuestions();
+      loadMySurveysList();
+    } else {
+      alert(result.msg || '发布失败');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('网络错误，无法发布');
+  });
+}
+
+
+// === 新增：页面加载时检查是否已登录 ===
+fetch('api/check_login.php')
+  .then(response => response.json())
+  .then(result => {
+    if (result.success && result.user) {
+      currentUser = result.user;
+      currentUserSpan.textContent = currentUser.username;
+      authSection.style.display = 'none';
+      mainDashboard.style.display = 'flex';
+      switchModule('dashboard');  // 默认进入仪表盘
+    }
+  })
+  .catch(err => {
+    console.error('检查登录状态失败', err);
+  });
+
+
+// === 我的問卷列表動態加載（已修復分享按鈕語法錯誤） ===
+function loadMySurveysList() {
+  const container = document.getElementById('my-surveys-container');
+  if (!container) {
+    console.error('找不到 my-surveys-container 容器');
+    return;
+  }
+
+  container.innerHTML = '<p style="text-align:center;padding:60px;color:#999;">載入中...</p>';
+
+  fetch('api/get_surveys.php')
+    .then(response => response.json())
+    .then(result => {
+      container.innerHTML = '';
+
+      if (!result.success) {
+        container.innerHTML = '<p style="text-align:center;color:red;">載入失敗：' + (result.msg || '未知錯誤') + '</p>';
+        return;
+      }
+
+      if (result.data.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:100px;color:#999;background:#f9f9f9;border-radius:8px;">'
+          + '<p style="font-size:48px;">📝</p>'
+          + '<p style="font-size:20px;font-weight:bold;">暫無問卷</p>'
+          + '<p style="margin-top:10px;">點擊右上角 “創建問卷” 按鈕開始你的第一份問卷吧！</p>'
+          + '</div>';
+        return;
+      }
+
+      result.data.forEach(survey => {
+        console.log('原始survey對象:', survey);
+
+        // 安全處理 title（防 null/undefined + 轉義單引號/雙引號）
+        const safeTitle = survey.title || "未命名問卷";
+        const escapedTitle = safeTitle.replace(/'/g, "\\'").replace(/"/g, '\\"');
+
+        const div = document.createElement('div');
+        div.style = 'background:white;padding:20px;margin:15px 0;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1);';
+
+        div.innerHTML = `
+  <h3 style="margin:0 0 10px 0;color:#2c3e50;">${safeTitle}</h3>
+  <p style="color:#666;margin:10px 0;">${survey.description || "暫無描述"}</p>
+  <div style="font-size:14px;color:#888;">
+    狀態：${survey.status === 'published' ? '<span style="color:#2ecc71;">已發布</span>' : '<span style="color:#f39c12;">草稿</span>'}
+    &nbsp;&nbsp; 創建時間：${new Date(survey.created_at).toLocaleString('zh-CN')}
+  </div>
+  <div style="margin-top:15px;">
+    <button style="padding:8px 16px;margin-right:8px;border:none;border-radius:4px;background:#3498db;color:white;cursor:pointer;" onclick="editSurvey(${survey.id})">編輯</button>
+    <button style="padding:8px 16px;margin-right:8px;border:none;border-radius:4px;background:#e74c3c;color:white;cursor:pointer;" onclick="deleteSurvey(${survey.id})">刪除</button>
+    <button style="padding:8px 16px;margin-right:8px;border:none;border-radius:4px;background:#95a5a6;color:white;cursor:pointer;" onclick="alert('預覽功能開發中')">預覽</button>
+    <button style="padding:8px 16px;border:none;border-radius:4px;background:#9b59b6;color:white;cursor:pointer;" 
+            onclick="shareSurvey(${survey.id}, '${escapedTitle}')">
+      分享
+    </button>
+    <!-- 添加查看结果按钮 -->
+    <button style="padding:8px 16px;margin-left:8px;border:none;border-radius:4px;background:#2ecc71;color:white;cursor:pointer;" 
+            onclick="viewSurveyResults(${survey.id}, '${escapedTitle}')">
+      查看结果
+    </button>
+  </div>
+`;
+        container.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      container.innerHTML = '<p style="text-align:center;color:red;">網路錯誤，無法加載</p>';
+    });
+}
+
+// 当显示“我的问卷”模块时自动加载列表
+document.querySelectorAll('.nav-item[data-module="my-surveys"]').forEach(item => {
+  item.addEventListener('click', () => {
+    setTimeout(loadMySurveysList, 100);  // 延迟一点确保页面已切换
+  });
+});
+
+
+function deleteSurvey(surveyId) {
+  if (!confirm('确定要删除这份问卷吗？删除后无法恢复！')) {
+    return;
+  }
+
+  fetch('api/delete_survey.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ survey_id: surveyId })
+  })
+  .then(response => response.json())
+  .then(result => {
+    if (result.success) {
+      alert('问卷删除成功！');
+      loadMySurveysList();  // 刷新列表
+    } else {
+      alert(result.msg || '删除失败');
+    }
+  })
+  .catch(err => {
+    console.error(err);
+    alert('网络错误');
+  });
+}
+
+
+let currentEditingSurveyId = null;  // 记录当前正在编辑的问卷ID
+
+function editSurvey(surveyId) {
+    currentEditingSurveyId = surveyId;
+
+    fetch(`api/get_survey.php?id=${surveyId}`)
+        .then(response => response.json())
+        .then(result => {
+            if (!result.success) {
+                alert(result.msg || '加载失败');
+                return;
+            }
+
+            // 填充标题和描述
+            document.getElementById('survey-title').value = result.survey.title;
+            document.getElementById('survey-description').value = result.survey.description || '';
+
+            // 填充访问权限（新增的部分）
+            document.getElementById('survey-access').value = result.survey.access_type || 'public';
+
+            // 清空并加载问题
+            questions = result.questions.map(q => ({
+                id: q.id,
+                title: q.title,
+                type: q.type,
+                required: !!q.required,
+                options: q.options
+            }));
+
+            renderQuestions();
+
+            // 切换到设计页面
+            switchModule('survey-design');
+
+            // 修改保存按钮文本（可选）
+            document.getElementById('save-survey').textContent = '更新问卷';
+        })
+        .catch(err => {
+            console.error(err);
+            alert('网络错误，无法加载问卷');
+        });
+}
+
+// 修改 saveSurvey() 支持更新
+function shareSurvey(surveyId, title) {
+    // 获取当前网站的基地址（自动适应开发和生产环境）
+    const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '/fill.html');
+    const fillUrl = `${baseUrl}?id=${surveyId}`;
+    
+    // 创建分享弹窗内容
+    const shareHtml = `
+        <div style="padding: 20px; text-align: center;">
+            <h3 style="color: #333; margin-bottom: 20px;">📋 分享问卷</h3>
+            <p style="color: #666; margin-bottom: 10px;">问卷标题：<strong>${title}</strong></p>
+            <p style="color: #777; font-size: 14px; margin-bottom: 15px;">复制以下链接分享给填写者：</p>
+            
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                <input type="text" id="share-link-input" value="${fillUrl}" readonly 
+                       style="width: 100%; border: none; background: transparent; 
+                              font-size: 14px; text-align: center; cursor: pointer;"
+                       onclick="this.select(); document.execCommand('copy');">
+            </div>
+            
+            <p style="color: #28a745; font-size: 13px; display: none;" id="copy-success-msg">
+                ✅ 链接已复制到剪贴板！
+            </p>
+            
+            <div style="margin-top: 20px;">
+                <button onclick="copyShareLink()" 
+                        style="padding: 10px 20px; background: #007bff; color: white; 
+                               border: none; border-radius: 4px; cursor: pointer; margin-right: 10px;">
+                    复制链接
+                </button>
+                <button onclick="Swal.close()" 
+                        style="padding: 10px 20px; background: #6c757d; color: white; 
+                               border: none; border-radius: 4px; cursor: pointer;">
+                    关闭
+                </button>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-radius: 4px;">
+                <p style="margin: 0; color: #0056b3; font-size: 12px;">
+                    💡 提示：将链接发送给填写者，他们点击即可填写问卷
+                </p>
+            </div>
+        </div>
+    `;
+    
+    Swal.fire({
+        html: shareHtml,
+        showConfirmButton: false,
+        width: 500
+    });
+}
+
+// 辅助函数：复制链接
+function copyShareLink() {
+    const input = document.getElementById('share-link-input');
+    input.select();
+    document.execCommand('copy');
+    
+    // 显示成功消息
+    const msg = document.getElementById('copy-success-msg');
+    msg.style.display = 'block';
+    
+    // 3秒后隐藏消息
+    setTimeout(() => {
+        msg.style.display = 'none';
+    }, 3000);
+}
+
+// 查看问卷结果的函数
+function viewSurveyResults(surveyId, title) {
+    // 显示加载中
+    Swal.fire({
+        title: '加载中...',
+        text: '正在获取问卷结果',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    fetch(`api/get_responses.php?survey_id=${surveyId}`)
+        .then(response => response.json())
+        .then(result => {
+            Swal.close();
+            
+            if (!result.success) {
+                Swal.fire('错误', result.msg || '获取结果失败', 'error');
+                return;
+            }
+            
+            // 构建结果弹窗内容
+            const resultsHtml = buildResultsHtml(result);
+            
+            // 显示结果弹窗
+            Swal.fire({
+                title: `${title} - 收集结果`,
+                html: resultsHtml,
+                width: 900,
+                showCloseButton: true,
+                showConfirmButton: false,
+                customClass: {
+                    popup: 'survey-results-popup'
+                }
+            });
+        })
+        .catch(err => {
+            Swal.fire('错误', '网络错误，无法获取结果', 'error');
+            console.error(err);
+        });
+}
+
+// 构建结果HTML内容
+function buildResultsHtml(result) {
+    const { survey, data, stats } = result;
+    
+    let html = `
+        <div class="survey-results-container">
+            <div class="results-header">
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">总提交数：</span>
+                        <span class="stat-value">${stats.total_responses}</span>
+                    </div>
+                </div>
+            </div>
+    `;
+    
+    if (stats.total_responses === 0) {
+        html += `
+            <div class="no-data">
+                <p>📭 暂无提交记录</p>
+                <p style="color:#666;font-size:14px;">分享问卷链接后，填写者的提交会显示在这里</p>
+            </div>
+        `;
+    } else {
+        // 问题标题行
+        html += `
+            <div class="results-table-container">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th style="width: 150px;">提交时间</th>
+        `;
+        
+        // 添加问题列
+        survey.questions.forEach((q, index) => {
+            html += `<th>Q${index + 1}: ${q.title}</th>`;
+        });
+        
+        html += `
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        // 添加数据行
+        data.forEach((response, rowIndex) => {
+            html += `
+                <tr>
+                    <td>${rowIndex + 1}</td>
+                    <td>${new Date(response.submit_time).toLocaleString('zh-CN')}</td>
+            `;
+            
+            // 添加每个问题的答案
+            survey.questions.forEach(q => {
+                const answer = response.answers[q.id] || '';
+                html += `<td title="${answer}">${truncateText(answer, 30)}</td>`;
+            });
+            
+            html += `</tr>`;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        // 添加导出按钮
+        html += `
+            <div style="margin-top: 20px; text-align: center;">
+                <button onclick="exportResults(${survey.id})" 
+                        style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    导出为Excel
+                </button>
+            </div>
+        `;
+    }
+    
+    html += `</div>`;
+    
+    return html;
+}
+
+// 辅助函数：截断文本
+function truncateText(text, maxLength) {
+    if (!text) return '';
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
+
+// 导出结果函数
+// 导出结果函数
+function exportResults(surveyId) {
+    Swal.fire({
+        title: '正在导出...',
+        text: '请稍候',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // 创建一个隐藏的iframe来下载文件
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    // 设置iframe的src来触发下载
+    iframe.src = `api/export_results.php?survey_id=${surveyId}`;
+    
+    // 移除加载提示
+    setTimeout(() => {
+        Swal.close();
+        // 移除iframe
+        setTimeout(() => {
+            document.body.removeChild(iframe);
+            Swal.fire({
+                icon: 'success',
+                title: '导出完成',
+                text: '文件下载已经开始',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }, 1000);
+    }, 1000);
+}
+    // 初始化应用
+    init();
+  </script>
+</body>
+</html>
+
+
+
