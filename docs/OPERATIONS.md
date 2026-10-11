@@ -95,6 +95,19 @@ php _restore/tools/reset_password.php <用户名> <新密码> [admin|editor|view
 
 该脚本拒绝通过网页访问（`PHP_SAPI !== 'cli'` 时直接返回 403）。
 
+### 端到端验收测试
+
+`tests/acceptance_test.ps1` 覆盖 29 项断言，遍历注册、会话、建卷、草稿隔离、发布、
+必答校验、提交、结果查看、CSV 导出、级联删除与测试数据清理。
+
+```powershell
+# 对任意环境运行（自行创建并清理测试数据）
+powershell -ExecutionPolicy Bypass -File tests\acceptance_test.ps1 -BaseUrl http://127.0.0.1:8080 -MysqlExe "C:\path\to\mysql.exe"
+```
+
+建议在**每次改动接口代码后**、以及**每次部署后**各跑一次，用来防回归。
+不传 `-MysqlExe` 时跳过两项数据库级检查（会报告 SKIP），因此也可以直接对线上环境运行。
+
 ## 6. 备份策略建议
 
 仅本机备份是不够的——服务器本身也可能整台消失。建议分层：

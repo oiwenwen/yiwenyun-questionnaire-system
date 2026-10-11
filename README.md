@@ -117,6 +117,8 @@ php _restore/tools/reset_password.php 你的用户名 新密码 admin
 │   └── tools/
 │       ├── reset_password.php          重置用户密码（命令行）
 │       └── backup_database.ps1         数据库定时备份（Windows）
+├── tests/
+│   └── acceptance_test.ps1             端到端验收测试（29 项断言，可对线上环境运行）
 ├── docs/
 │   ├── DEPLOY.md                       部署指南（含 1Panel / 轻量服务器实践）
 │   └── OPERATIONS.md                   运维手册（排错、备份、数据结构约定）
@@ -144,6 +146,25 @@ users (id, username, password, role, email, created_at, status)
      1) 后台问卷设计界面  2) 我的问卷列表  3) 手机端填写页
      放到 docs/screenshots/ 后用 Markdown 引用，例如：
      ![问卷设计](docs/screenshots/design.png) -->
+
+## 测试
+
+仓库附带一套端到端验收测试 `tests/acceptance_test.ps1`，覆盖 **29 项断言**：
+页面可达性、注册与会话保持、草稿隔离与越权拦截、发布与选项渲染、必答校验、
+拒收非本问卷字段、答卷写入与时间字段、CSV 导出与 BOM、未登录越权拦截、
+删除后的级联清理与测试数据清理。
+
+它会自行创建测试账号和问卷，跑完自动清理，因此**可以对线上环境直接运行**：
+
+```powershell
+# 对线上环境跑（从你的 Windows 机器执行即可，服务器上不需要装 PowerShell）
+powershell -ExecutionPolicy Bypass -File tests\acceptance_test.ps1 -BaseUrl http://你的域名
+
+# 本机跑（额外传入 MySQL 客户端路径，可多跑 2 项数据库级断言）
+powershell -ExecutionPolicy Bypass -File tests\acceptance_test.ps1 -BaseUrl http://127.0.0.1:8080 -MysqlExe "C:\path\to\mysql.exe"
+```
+
+> 不传 `-MysqlExe` 时会跳过"孤儿数据检查"和"测试数据清理"两项，脚本会明确报告 SKIP。
 
 ## 部署
 

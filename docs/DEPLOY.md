@@ -99,7 +99,17 @@ return [
 ];
 ```
 
-上线检查清单：
+**推荐：直接用仓库附带的验收脚本，一次跑完全部检查**
+
+```powershell
+# 从你的 Windows 机器执行，目标指向线上地址
+powershell -ExecutionPolicy Bypass -File tests\acceptance_test.ps1 -BaseUrl http://你的域名
+```
+
+脚本会自行注册测试账号、建卷、发布、匿名填写提交、查看结果、导出 CSV、删除问卷，
+最后清理测试数据，输出 PASS/FAIL 汇总。
+
+手工检查清单（与脚本覆盖的内容一致）：
 
 - [ ] 打开 `http://域名或IP/index.html`，出现登录界面
 - [ ] 能注册 / 登录
