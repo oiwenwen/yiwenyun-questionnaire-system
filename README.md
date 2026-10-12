@@ -177,6 +177,14 @@ powershell -ExecutionPolicy Bypass -File tests\acceptance_test.ps1 -BaseUrl http
 
 > 不传 `-MysqlExe` 时会跳过"孤儿数据检查"和"测试数据清理"两项，脚本会明确报告 SKIP。
 
+另有一套 **JS 冒烟测试** `tests/js_smoke_test.js`（Node.js）：把页面脚本放进最小 DOM 桩环境执行，
+并静态检查 `getElementById()` 引用的元素是否存在。它专门拦截「引用了未定义的函数 / 不存在的元素」
+这类**只有浏览器才会暴露、接口测试永远测不出**的前端错误：
+
+```bash
+node tests/js_smoke_test.js
+```
+
 ## 部署
 
 完整的服务器部署步骤见 **[docs/DEPLOY.md](docs/DEPLOY.md)**（含国内服务器备案注意事项、

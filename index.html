@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
 
-  <!-- 引入 SweetAlert2 -->
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <!-- SweetAlert2 已本地化（vendor/），不依赖 CDN，避免网络波动导致弹窗失效 -->
+  <script src="vendor/sweetalert2-11.min.js"></script>
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -805,8 +805,9 @@
         </div>
 
         <div class="controls">
-          <button class="control-btn refresh">刷新数据</button>
-          <button class="control-btn export">导出报告</button>
+          <!-- 以下两个按钮暂无对应功能，先隐藏，避免误导 -->
+          <button class="control-btn refresh" style="display:none;">刷新数据</button>
+          <button class="control-btn export" style="display:none;">导出报告</button>
         </div>
       </div>
 
@@ -816,7 +817,7 @@
           <h3 class="module-title">我的问卷</h3>
           <div>
             <button class="btn-module create" onclick="switchModule('survey-design')">创建问卷</button>
-            <button class="btn-module export">导出数据</button>
+            <button class="btn-module export" style="display:none;">导出数据</button>
           </div>
         </div>
         <div class="filter-controls">
@@ -1108,6 +1109,17 @@
     let currentModule = 'dashboard';
     let questions = [];
 
+    // HTML 转义：所有进入 innerHTML/属性的用户输入都必须经过它（防 XSS）
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
     // DOM元素
     const authSection = document.getElementById('auth-section');
     const mainDashboard = document.getElementById('main-dashboard');
@@ -1149,27 +1161,34 @@
       bindEvents();
     }
 
-    // 绑定事件
+    // 绑定事件（每个绑定独立容错：一个按钮的异常不会连累其他按钮）
     function bindEvents() {
+      const bind = (id, fn) => {
+        const el = document.getElementById(id);
+        if (!el) { console.error('[bind] 找不到元素 #' + id); return; }
+        if (typeof fn !== 'function') { console.error('[bind] #' + id + ' 的处理函数未定义'); return; }
+        el.addEventListener('click', fn);
+      };
+
       // 登录注册切换
-      showRegisterBtn.addEventListener('click', () => {
+      bind('show-register', () => {
         loginForm.style.display = 'none';
         registerForm.style.display = 'block';
       });
 
-      showLoginBtn.addEventListener('click', () => {
+      bind('show-login', () => {
         registerForm.style.display = 'none';
         loginForm.style.display = 'block';
       });
 
       // 登录
-      loginBtn.addEventListener('click', login);
-      
+      bind('login-btn', login);
+
       // 注册
-      registerBtn.addEventListener('click', register);
-      
+      bind('register-btn', register);
+
       // 退出登录
-      logoutBtn.addEventListener('click', logout);
+      bind('logout-btn', logout);
 
       // 导航栏切换
       navItems.forEach(item => {
@@ -1180,9 +1199,9 @@
       });
 
       // 问卷设计相关
-      document.getElementById('add-question-btn').addEventListener('click', addQuestion);
-      document.getElementById('save-survey').addEventListener('click', saveSurvey);
-      document.getElementById('publish-survey').addEventListener('click', publishSurvey);
+      bind('add-question-btn', addQuestion);
+      bind('save-survey', saveSurvey);
+      bind('publish-survey', publishSurvey);
     }
 
     // 登录功能
@@ -1375,7 +1394,7 @@
         questionDiv.className = 'question-form';
         questionDiv.innerHTML = `
           <div class="question-header">
-            <h4>${q.title}</h4>
+            <h4>${escapeHtml(q.title)}</h4>
             <button class="action-delete" onclick="removeQuestion(${index})">删除</button>
           </div>
           <div class="question-content">
@@ -1386,7 +1405,7 @@
           </div>
           ${q.options.length > 0 ? `
             <div class="question-options">
-              ${q.options.map(opt => `<div class="option-item"><input type="text" value="${opt}" readonly></div>`).join('')}
+              ${q.options.map(opt => `<div class="option-item"><input type="text" value="${escapeHtml(opt)}" readonly></div>`).join('')}
             </div>
           ` : ''}
         `;
@@ -1403,6 +1422,48 @@
       questions[index].required = !questions[index].required;
     };
     
+
+function saveSurvey() {
+  const title = document.getElementById('survey-title').value.trim();
+  if (!title) { alert('请先输入问卷标题'); return; }
+  if (questions.length === 0) { alert('请至少添加一个问题'); return; }
+
+  const isEditing = currentEditingSurveyId !== null;
+  const payload = {
+    title: title,
+    description: document.getElementById('survey-description').value.trim(),
+    questions: questions.map(q => ({
+      title: q.title,
+      type: q.type,
+      required: !!q.required,
+      options: Array.isArray(q.options) ? q.options : []
+    }))
+  };
+  if (isEditing) {
+    payload.survey_id = currentEditingSurveyId;
+  }
+
+  fetch(isEditing ? 'api/update_survey.php' : 'api/create_survey.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+    .then(response => response.json())
+    .then(result => {
+      if (result.success) {
+        alert(result.msg || (isEditing ? '更新成功' : '保存成功'));
+        currentEditingSurveyId = null;
+        document.getElementById('save-survey').textContent = '保存问卷';
+        loadMySurveysList();
+      } else {
+        alert(result.msg || '保存失败');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('网络错误：无法连接服务器');
+    });
+}
 
 function publishSurvey() {
   const title = document.getElementById('survey-title').value.trim();
@@ -1421,9 +1482,14 @@ function publishSurvey() {
 
   const data = {
     title: title,
-    description: document.getElementById('survey-description')?.value.trim() || '',
+    description: document.getElementById('survey-description').value.trim(),
     status: 'published',
-    questions: questions
+    questions: questions.map(q => ({
+      title: q.title,
+      type: q.type,
+      required: !!q.required,
+      options: Array.isArray(q.options) ? q.options : []
+    }))
   };
 
   fetch('api/create_survey.php', {
@@ -1500,31 +1566,31 @@ function loadMySurveysList() {
       result.data.forEach(survey => {
         console.log('原始survey對象:', survey);
 
-        // 安全處理 title（防 null/undefined + 轉義單引號/雙引號）
+        // 安全處理 title（HTML 轉義，防注入）
         const safeTitle = survey.title || "未命名問卷";
-        const escapedTitle = safeTitle.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        const escapedTitle = escapeHtml(safeTitle);
 
         const div = document.createElement('div');
         div.style = 'background:white;padding:20px;margin:15px 0;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1);';
 
         div.innerHTML = `
-  <h3 style="margin:0 0 10px 0;color:#2c3e50;">${safeTitle}</h3>
-  <p style="color:#666;margin:10px 0;">${survey.description || "暫無描述"}</p>
+  <h3 style="margin:0 0 10px 0;color:#2c3e50;">${escapeHtml(safeTitle)}</h3>
+  <p style="color:#666;margin:10px 0;">${escapeHtml(survey.description || "暫無描述")}</p>
   <div style="font-size:14px;color:#888;">
     狀態：${survey.status === 'published' ? '<span style="color:#2ecc71;">已發布</span>' : '<span style="color:#f39c12;">草稿</span>'}
-    &nbsp;&nbsp; 創建時間：${new Date(survey.created_at).toLocaleString('zh-CN')}
+    &nbsp;&nbsp; 創建時間：${new Date(String(survey.created_at).replace(' ', 'T')).toLocaleString('zh-CN')}
   </div>
   <div style="margin-top:15px;">
     <button style="padding:8px 16px;margin-right:8px;border:none;border-radius:4px;background:#3498db;color:white;cursor:pointer;" onclick="editSurvey(${survey.id})">編輯</button>
     <button style="padding:8px 16px;margin-right:8px;border:none;border-radius:4px;background:#e74c3c;color:white;cursor:pointer;" onclick="deleteSurvey(${survey.id})">刪除</button>
     <button style="padding:8px 16px;margin-right:8px;border:none;border-radius:4px;background:#95a5a6;color:white;cursor:pointer;" onclick="alert('預覽功能開發中')">預覽</button>
     <button style="padding:8px 16px;border:none;border-radius:4px;background:#9b59b6;color:white;cursor:pointer;" 
-            onclick="shareSurvey(${survey.id}, '${escapedTitle}')">
+            data-title="${escapedTitle}" onclick="shareSurvey(${survey.id}, this.dataset.title)">
       分享
     </button>
     <!-- 添加查看结果按钮 -->
     <button style="padding:8px 16px;margin-left:8px;border:none;border-radius:4px;background:#2ecc71;color:white;cursor:pointer;" 
-            onclick="viewSurveyResults(${survey.id}, '${escapedTitle}')">
+            data-title="${escapedTitle}" onclick="viewSurveyResults(${survey.id}, this.dataset.title)">
       查看结果
     </button>
   </div>
@@ -1589,16 +1655,13 @@ function editSurvey(surveyId) {
             document.getElementById('survey-title').value = result.survey.title;
             document.getElementById('survey-description').value = result.survey.description || '';
 
-            // 填充访问权限（新增的部分）
-            document.getElementById('survey-access').value = result.survey.access_type || 'public';
-
-            // 清空并加载问题
+            // 清空并加载问题（后端返回的选项是 [{id,text}]，这里转成前端使用的字符串数组）
             questions = result.questions.map(q => ({
                 id: q.id,
                 title: q.title,
                 type: q.type,
                 required: !!q.required,
-                options: q.options
+                options: (q.options || []).map(o => (typeof o === 'string' ? o : o.text))
             }));
 
             renderQuestions();
@@ -1625,7 +1688,7 @@ function shareSurvey(surveyId, title) {
     const shareHtml = `
         <div style="padding: 20px; text-align: center;">
             <h3 style="color: #333; margin-bottom: 20px;">📋 分享问卷</h3>
-            <p style="color: #666; margin-bottom: 10px;">问卷标题：<strong>${title}</strong></p>
+            <p style="color: #666; margin-bottom: 10px;">问卷标题：<strong>${escapeHtml(title)}</strong></p>
             <p style="color: #777; font-size: 14px; margin-bottom: 15px;">复制以下链接分享给填写者：</p>
             
             <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
@@ -1762,7 +1825,7 @@ function buildResultsHtml(result) {
         
         // 添加问题列
         survey.questions.forEach((q, index) => {
-            html += `<th>Q${index + 1}: ${q.title}</th>`;
+            html += `<th>Q${index + 1}: ${escapeHtml(q.title)}</th>`;
         });
         
         html += `
@@ -1776,13 +1839,13 @@ function buildResultsHtml(result) {
             html += `
                 <tr>
                     <td>${rowIndex + 1}</td>
-                    <td>${new Date(response.submit_time).toLocaleString('zh-CN')}</td>
+                    <td>${new Date(String(response.submit_time).replace(' ', 'T')).toLocaleString('zh-CN')}</td>
             `;
             
             // 添加每个问题的答案
             survey.questions.forEach(q => {
                 const answer = response.answers[q.id] || '';
-                html += `<td title="${answer}">${truncateText(answer, 30)}</td>`;
+                html += `<td title="${escapeHtml(answer)}">${escapeHtml(truncateText(answer, 30))}</td>`;
             });
             
             html += `</tr>`;
