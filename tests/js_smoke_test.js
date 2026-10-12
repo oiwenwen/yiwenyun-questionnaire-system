@@ -69,6 +69,19 @@ async function runPage(file) {
     }
   }
 
+  // ---- 1b) 样式依赖检查：用了 Swal 就必须引入它的样式 ----
+  // 教训：sweetalert2.min.js 是「只有 JS、不含 CSS」的构建产物，
+  // 只引它会导致弹窗完全没有样式（跑到角落、内容被裁切）。
+  const styleMissing = [];
+  if (/\bSwal\s*\./.test(scripts.join('\n'))) {
+    const hasSwalCss =
+      /<link[^>]+href=["'][^"']*sweetalert2[^"']*\.css["']/i.test(html) ||
+      /sweetalert2\.all(\.min)?\.js/i.test(html);
+    if (!hasSwalCss) {
+      styleMissing.push('页面使用了 Swal，但未引入 sweetalert2 的 CSS（或 all 版 JS），弹窗会完全错位');
+    }
+  }
+
   // ---- 2) 运行时执行 ----
   const docCache = {};
   const document = {
@@ -126,6 +139,7 @@ async function runPage(file) {
 
   const problems = [];
   for (const id of staticMissing) problems.push('静态: 引用了不存在的元素 #' + id);
+  for (const s of styleMissing) problems.push('样式: ' + s);
   for (const e of bindErrors) problems.push('运行时: ' + e);
   if (threw) {
     const loc = (threw.stack || '').split('\n')[1] || '';

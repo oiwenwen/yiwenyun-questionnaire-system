@@ -2,7 +2,8 @@
 <html lang="zh-CN">
 <head>
 
-  <!-- SweetAlert2 已本地化（vendor/），不依赖 CDN，避免网络波动导致弹窗失效 -->
+  <!-- SweetAlert2 本地化：★ 注意 JS 与 CSS 是两个文件，缺一不可（缺 CSS 会导致弹窗完全错位） -->
+  <link rel="stylesheet" href="vendor/sweetalert2-11.min.css">
   <script src="vendor/sweetalert2-11.min.js"></script>
 
   <meta charset="UTF-8">
@@ -858,7 +859,7 @@
         </div>
         
         <div class="form-group">
-          <label for="survey-time">问卷时间设置</label>
+          <label for="survey-start">问卷时间设置</label>
           <input type="datetime-local" id="survey-start" placeholder="开始时间">
           <input type="datetime-local" id="survey-end" placeholder="结束时间" style="margin-left: 10px;">
         </div>
@@ -1399,13 +1400,13 @@
           </div>
           <div class="question-content">
             <label>
-              <input type="checkbox" ${q.required ? 'checked' : ''} onchange="toggleRequired(${index})">
+              <input type="checkbox" id="q-${index}-required" name="q-${index}-required" ${q.required ? 'checked' : ''} onchange="toggleRequired(${index})">
               设为必答题
             </label>
           </div>
           ${q.options.length > 0 ? `
             <div class="question-options">
-              ${q.options.map(opt => `<div class="option-item"><input type="text" value="${escapeHtml(opt)}" readonly></div>`).join('')}
+              ${q.options.map((opt, oi) => `<div class="option-item"><input type="text" id="q-${index}-opt-${oi}" name="q-${index}-opt-${oi}" value="${escapeHtml(opt)}" readonly></div>`).join('')}
             </div>
           ` : ''}
         `;
