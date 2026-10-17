@@ -47,7 +47,7 @@ CREATE TABLE `users` (
   `status`     enum('active','disabled') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`username`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- 问卷主表
@@ -64,7 +64,7 @@ CREATE TABLE `surveys` (
   `updated_at`  datetime     DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- 题目表
@@ -81,7 +81,7 @@ CREATE TABLE `questions` (
   `sort_order` int(11)      DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `survey_id` (`survey_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- 选项表（仅 radio / checkbox 使用）
@@ -94,7 +94,7 @@ CREATE TABLE `options` (
   `sort_order`  int(11)      DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `question_id` (`question_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- 提交记录表（一次提交一行）
@@ -108,7 +108,7 @@ CREATE TABLE `responses` (
   `ip_address`  varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `survey_id` (`survey_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ---------------------------------------------------------------------------
 -- 答案表（一条答案一行；多选题的多个选项用 ", " 拼进 answer_text）
@@ -122,7 +122,7 @@ CREATE TABLE `answers` (
   PRIMARY KEY (`id`),
   KEY `response_id` (`response_id`),
   KEY `question_id` (`question_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -136,6 +136,6 @@ SET FOREIGN_KEY_CHECKS = 1;
 --   B) 用项目自带的重置工具（推荐，会正确生成哈希）：
 --        php _restore/tools/reset_password.php 你的用户名 新密码 admin
 --
--- 另外提醒：本项目的表都是 MyISAM 引擎，没有外键，删除操作的一致性
--- 完全由 api/delete_survey.php 里的显式级联删除来保证。
+-- 另外提醒：本项目表引擎已迁移为 InnoDB（支持事务）；表间未加外键，
+-- 删除操作的一致性由「InnoDB 事务 + api/delete_survey.php 显式级联删除」共同保证。
 -- ============================================================================
